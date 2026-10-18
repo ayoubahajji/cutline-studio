@@ -1,0 +1,23 @@
+{
+  "name": "cutline-studio",
+  "version": "2.0.0",
+  "private": true,
+  "description": "A local browser video editor for ecommerce ads, with layers, region blur, audio tools, transitions, and local captions.",
+  "scripts": {
+    "start": "python3 launch.py --open",
+    "check": "node --check dist/app.js && node --check dist/enhanced.js && node --check dist/editor-model.js && node --check dist/timeline-interactions.js && node --check dist/audio-editing.js && node --check dist/audio-workspace.js && node --check dist/multi-selection.js && node --check dist/frame-geometry.js && node --check dist/preview-transform.js && node --check dist/export-frames.js && node --check dist/source-check.js && node --check dist/source-review.js && node --check dist/precise-export.js && node --check dist/video-stacking.js && node --check dist/audio-desk.js && node tests/model.cjs && node tests/interactions.cjs && node tests/audio-editing.cjs && node tests/audio-workspace.cjs && node tests/editor-integration.cjs && node tests/multi-selection.cjs && node tests/preview-transform.cjs && node tests/export-frames.cjs && node tests/precise-export.cjs && node tests/video-stacking.cjs && node tests/editor-audit.cjs && node tests/source-check.cjs",
+    "check:encoder": "python3 tests/frame-export.py && python3 tests/source-video.py"
+  },
+  "devDependencies": {
+    "jsdom": "^26.1.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ayoubahajji/cutline-studio.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ayoubahajji/cutline-studio/issues"
+  },
+  "homepage": "https://github.com/ayoubahajji/cutline-studio#readme"
+}

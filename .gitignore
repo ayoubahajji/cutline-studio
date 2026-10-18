@@ -1,0 +1,40 @@
+# Dependencies and local runtimes
+node_modules/
+.runtime/
+__pycache__/
+*.py[cod]
+tools/
+venv/
+.venv/
+
+# Generated artifacts, recordings, projects and private media
+output/
+release/
+Cutline-Studio.zip
+*.cutline
+*.mp4
+*.mov
+*.webm
+*.mkv
+*.wav
+*.mp3
+*.m4a
+*.aac
+*.flac
+*.jpg
+*.jpeg
+*.png
+*.log
+
+# Local investigation notes: not part of the public source distribution
+ANALYSIS.md
+VERIFICATION.md
+BUG_AUDIT.md
+
+# Machine and secret configuration
+.DS_Store
+.env
+.env.*
+!.env.example
+*.pem
+*.key
