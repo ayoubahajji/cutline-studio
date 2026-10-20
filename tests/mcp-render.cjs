@@ -1,0 +1,11 @@
+const assert=require('node:assert/strict'),fs=require('node:fs/promises'),os=require('node:os'),path=require('node:path');
+const {FFMPEG,processRun,probe}=require('../mcp/media.cjs'),{exportVideo}=require('../mcp/render.cjs'),{DEFAULTS}=require('../mcp/store.cjs');
+(async()=>{
+ const folder=await fs.mkdtemp(path.join(os.tmpdir(),'cutline-mcp-render-'));
+ try{const source=path.join(folder,'long.mp4');await processRun(FFMPEG,['-v','error','-y','-f','lavfi','-i','testsrc2=size=160x90:rate=30:duration=60.6','-c:v','libx264','-pix_fmt','yuv420p',source]);const meta=await probe(source),data={id:'qa',revision:7,assets:[{id:'source',path:source,type:'video',...meta}],project:{ratio:'16:9',background:'#0d1014',muted:{},clips:[{...DEFAULTS,id:'first',assetId:'source',name:'Opening',track:'video',start:0,duration:20.7},{...DEFAULTS,id:'middle',assetId:'source',name:'Middle',track:'video',start:20.2,duration:20.7,in:20.2,transition:'wipe',transitionDuration:.5},{...DEFAULTS,id:'last',assetId:'source',name:'Final scene',track:'video',start:40.4,duration:20.2,in:40.4,transition:'slide',transitionDuration:.5}]}};
+  let delivered=0;const target=path.join(folder,'complete.mp4'),result=await exportVideo(data,target,{height:90,progress:p=>{if(p.renderedFrames)delivered=p.renderedFrames;}});assert.equal(result.frames,1818);assert.equal(result.verification.frames,1818);assert.equal(result.duration,60.6);assert.ok(delivered>=1810);assert.equal(result.revision,7);
+  const abort=new AbortController(),cancelled=path.join(folder,'cancelled.mp4');await assert.rejects(exportVideo(data,cancelled,{height:90,signal:abort.signal,progress:p=>{if(p.renderedFrames>20)abort.abort();}}));for(const file of [cancelled,cancelled+'.partial.mp4',cancelled+'.wav'])await assert.rejects(fs.stat(file),/ENOENT/);
+  const bad=structuredClone(data);bad.project.clips[2].duration=30;await assert.rejects(exportVideo(bad,path.join(folder,'bad.mp4'),{height:90}),/Pictures end/);
+  console.log('PASS: native compositor renders/decodes 1818 frames across wipe/slide transitions through 60.6s; cancellation cleans partial files; source overrun refuses export');
+ }finally{await fs.rm(folder,{recursive:true,force:true});}
+})().catch(error=>{console.error(error);process.exitCode=1;});

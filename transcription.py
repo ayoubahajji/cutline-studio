@@ -7,10 +7,12 @@ import tempfile
 import threading
 import time
 import uuid
+import sys
 
 CACHE = Path.home() / '.cache/hyperframes/whisper'
-BINARY = Path(os.environ.get('CUTLINE_WHISPER_BINARY', str(CACHE / 'whisper.cpp/build/bin/whisper-cli')))
-MODEL = Path(os.environ.get('CUTLINE_WHISPER_MODEL', str(CACHE / 'models/ggml-large-v3-turbo-q5_0.bin')))
+TOOLS = Path(sys.executable).parent/'tools' if getattr(sys,'frozen',False) else None
+BINARY = Path(os.environ.get('CUTLINE_WHISPER_BINARY', str(TOOLS/'whisper-cli' if TOOLS else CACHE/'whisper.cpp/build/bin/whisper-cli')))
+MODEL = Path(os.environ.get('CUTLINE_WHISPER_MODEL', str(TOOLS/'ggml-large-v3-turbo-q5_0.bin' if TOOLS else CACHE/'models/ggml-large-v3-turbo-q5_0.bin')))
 JOBS = {}
 LOCK = threading.Lock()
 SLOT = threading.Semaphore(1)

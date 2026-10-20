@@ -38,3 +38,8 @@ BUG_AUDIT.md
 !.env.example
 *.pem
 *.key
+
+# Local macOS application builds
+.desktop-build/
+*.app/
+*.dmg

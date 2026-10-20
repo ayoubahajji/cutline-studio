@@ -2,7 +2,7 @@
 
 **An open-source, local video editor for ecommerce creators.**
 
-Edit product videos, voiceovers, captions, and picture-in-picture scenes for Facebook, Instagram, and other ad placements. The interface runs in your browser; your media stays on your computer.
+Edit product videos, voiceovers, captions, and picture-in-picture scenes for Facebook, Instagram, and other ad placements. Use the Mac desktop application or run the browser editor from source. Editing and Whisper transcription run locally.
 
 Cutline Studio is an independent project. It is not affiliated with CapCut, Meta, or any ad platform.
 
@@ -21,7 +21,22 @@ Cutline Studio is an independent project. It is not affiliated with CapCut, Meta
 
 This is an early-stage editor for short ads, not a complete replacement for a mature desktop editor. See [limitations](#limitations) before relying on a workflow.
 
-## Quick start
+## Download the Mac application
+
+[Download Cutline Studio 2.1.0 for Apple Silicon](https://github.com/ayoubahajji/cutline-studio/releases/download/v2.1.0/Cutline-Studio-2.1.0-mac-arm64.dmg)
+
+For M1–M5 Macs on **macOS 13.5 or newer**. The community build includes Electron, Python, FFmpeg/x264, local Whisper large-v3-turbo (quantized model), and the complete Node-based MCP runtime. No Homebrew, Xcode, npm or separate speech-model installation is needed to use it. Allow about 3 GB for installation, plus space for projects and exports; 8 GB RAM minimum, 16 GB recommended. Intel/Windows binaries are not provided.
+
+1. Open the DMG and drag **Cutline Studio** to **Applications**.
+2. Eject the DMG and open Cutline from Applications.
+3. This community build is **ad-hoc signed, not Apple notarized**. If macOS blocks first launch, try opening it once, then use **System Settings → Privacy & Security → Open Anyway** only if you trust this release. See [Apple's instructions](https://support.apple.com/en-us/102445). Do not disable Gatekeeper globally.
+4. Import footage, edit and save a `.cutline` backup. For AI clients, open **Cutline Studio → MCP setup…** and copy the local MCP configuration.
+
+[Installation, troubleshooting and MCP setup](docs/MAC_INSTALL.md) · [Release checksums](https://github.com/ayoubahajji/cutline-studio/releases/tag/v2.1.0) · [Quality checks and limits](docs/QUALITY_CHECK.md) · [Build the app from source](docs/RELEASE_BUILD.md)
+
+The app starts and supervises its local engine. Desktop autosave is separate from browser autosave and MCP projects; portable `.cutline` files transfer edits between them. Closing flushes autosave and asks before cancelling an active export. There is no automatic update service; download new releases manually. Keep your project backups.
+
+## Run from source
 
 ### Requirements
 
@@ -131,4 +146,8 @@ Bug reports, usability improvements, caption tools, export reliability, and docu
 
 ## License
 
-[MIT](LICENSE) for this repository's source. FFmpeg, Whisper, models, browsers, and any media you import have their own licenses and are installed or supplied separately.
+[MIT](LICENSE) for this repository's source. Bundled runtime components retain their own licenses. FFmpeg/x264 is GPLv2-or-later and runs as a separate process; its corresponding sources accompany the release. See [third-party notices](THIRD_PARTY.md).
+
+## Edit through MCP
+
+Cutline also has 22 MCP tools for assistants and local server-to-server workflows: project editing, layers, captions, blur, audio cleanup, preview images, verified MP4/WAV exports, undo and editable project handoff. The Mac release bundles its own MCP runtime; use **MCP setup…** in the app menu. Source developers can run `npm run mcp:install` to install a managed runtime and register `cutline_studio` in Codex. It starts on demand and does not need the app window or browser server to stay open. See [MCP setup and capabilities](docs/MCP.md) and the [editing guide](mcp/GUIDE.md).

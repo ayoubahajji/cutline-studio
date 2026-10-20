@@ -4,9 +4,10 @@ import os
 import shutil
 import subprocess
 import tempfile
+import sys
 
 ROOT = Path(__file__).resolve().parent
-CANDIDATES = [os.environ.get('CUTLINE_FFMPEG_BINARY'), shutil.which('ffmpeg'), str(ROOT/'tools/ffmpeg'),
+CANDIDATES = [os.environ.get('CUTLINE_FFMPEG_BINARY'), str(Path(sys.executable).parent/'tools/ffmpeg') if getattr(sys,'frozen',False) else None, shutil.which('ffmpeg'), str(ROOT/'tools/ffmpeg'),
               str(Path.home()/'Library/Application Support/Cutline Studio/tools/ffmpeg')]
 BINARY = next((Path(p) for p in CANDIDATES if p and Path(p).is_file() and os.access(p, os.X_OK)), None)
 

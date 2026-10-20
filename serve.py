@@ -4,6 +4,7 @@ from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 from pathlib import Path
 from urllib.request import urlopen
 import argparse
+import os
 import functools
 import json
 import webbrowser
@@ -159,9 +160,10 @@ def open_editor(url):
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument('--port', type=int, default=4178, help='Preferred loopback port')
     parser.add_argument('--open', action='store_true', help='Open the editor in your default browser')
     args = parser.parse_args()
-    for port in range(4178, 4199):
+    for port in range(args.port, args.port+21):
         url = f'http://127.0.0.1:{port}'
         try:
             with urlopen(url + '/__cutline_health__', timeout=.3) as response:
@@ -181,8 +183,9 @@ def main():
     else:
         raise SystemExit('Ports 4178–4198 are busy. Close an older Cutline window and try again.')
     print(f'Cutline Studio is ready: {url}', flush=True)
-    (ROOT / 'output').mkdir(exist_ok=True)
-    (ROOT / 'output' / 'server.json').write_text(json.dumps({'url': url, 'port': port}))
+    state_root=Path(os.environ.get('CUTLINE_STATE_DIR', str(ROOT/'output')))
+    state_root.mkdir(parents=True, exist_ok=True)
+    (state_root / 'server.json').write_text(json.dumps({'url': url, 'port': port}))
     if args.open:
         open_editor(url)
     try:

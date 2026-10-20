@@ -231,7 +231,7 @@ function canvasBounds(){return canvas.getBoundingClientRect();}
 function showBox(x,y,w,h){const r=canvasBounds(),stage=$('#stage').getBoundingClientRect(),el=$('#region-draft');Object.assign(el.style,{left:(r.left-stage.left+x*r.width)+'px',top:(r.top-stage.top+y*r.height)+'px',width:(w*r.width)+'px',height:(h*r.height)+'px'});el.hidden=false;}
 function showRegionBox(c,t){const p=Model.poseAt(c,t-c.start);showBox(.5+p.x/100-p.width/200,.5+p.y/100-p.height/200,p.width/100,p.height/100);}
 function pointOnCanvas(e){const r=canvasBounds();return {x:clamp((e.clientX-r.left)/r.width,0,1),y:clamp((e.clientY-r.top)/r.height,0,1)};}
-function beginBlur(){if(exporting)return;stop();blurDrawing=true;$('#region-hint').hidden=false;$('#blur-area').classList.add('active');canvas.style.cursor='crosshair';toast('Drag a rectangle over the text or logo in the preview.');}
+function beginBlur(){if(exporting)return;if(project.locked.blur)return toast('Unlock the Blur regions track first.');stop();blurDrawing=true;$('#region-hint').hidden=false;$('#blur-area').classList.add('active');canvas.style.cursor='crosshair';toast('Drag a rectangle over the text or logo in the preview.');}
 function endBlurMode(){blurDrawing=false;$('#region-hint').hidden=true;$('#blur-area').classList.remove('active');canvas.style.cursor='move';}
 $('#blur-area').onclick=beginBlur;
 canvas.addEventListener('pointerdown',e=>{
@@ -246,7 +246,7 @@ window.addEventListener('pointermove',e=>{
 });
 window.addEventListener('pointerup',()=>{
  if(!previewDrag)return;const d=previewDrag;previewDrag=null;
- if(d.region){const w=Math.abs(d.last.x-d.start.x),h=Math.abs(d.last.y-d.start.y);if(w<.008||h<.008){toast('Drag a larger rectangle to blur.');return;}checkpoint();const base=current(),start=base&&isActive(base,playhead)?base.start:playhead,end=base&&isActive(base,playhead)?base.start+base.duration:Math.max(playhead+3,duration());const c={...Model.clone(defaults),id:uid(),track:'blur',name:'Blurred text / logo',start,duration:end-start,width:w*100,height:h*100,x:((d.last.x+d.start.x)/2-.5)*100,y:((d.last.y+d.start.y)/2-.5)*100,opacity:100,blurRadius:24,blurMode:'blur'};project.clips.push(c);selected=c.id;endBlurMode();commit();toast('Area blurred. Adjust its strength and timing in Properties.');}
+ if(d.region){if(exporting||project.locked.blur){endBlurMode();return;}const w=Math.abs(d.last.x-d.start.x),h=Math.abs(d.last.y-d.start.y);if(w<.008||h<.008){toast('Drag a larger rectangle to blur.');return;}checkpoint();const base=current(),start=base&&isActive(base,playhead)?base.start:playhead,end=base&&isActive(base,playhead)?base.start+base.duration:Math.max(playhead+3,duration());const c={...Model.clone(defaults),id:uid(),track:'blur',name:'Blurred text / logo',start,duration:end-start,width:w*100,height:h*100,x:((d.last.x+d.start.x)/2-.5)*100,y:((d.last.y+d.start.y)/2-.5)*100,opacity:100,blurRadius:24,blurMode:'blur'};project.clips.push(c);selected=c.id;endBlurMode();commit();toast('Area blurred. Adjust its strength and timing in Properties.');}
  else{renderInspector();scheduleSave();}
 });
 function updateGuides(){const el=$('#ad-safe-guide');if(el.hidden)return;const r=canvasBounds(),stage=$('#stage').getBoundingClientRect();Object.assign(el.style,{left:r.left-stage.left+r.width*.08+'px',top:r.top-stage.top+r.height*.13+'px',width:r.width*.84+'px',height:r.height*.66+'px'});}

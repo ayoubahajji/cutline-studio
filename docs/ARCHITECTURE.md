@@ -17,3 +17,11 @@ The browser owns the editable project, imported Blob URLs, preview canvas, timel
 - `launch.py`: managed macOS session service deployment; portable foreground startup is `serve.py`.
 
 Scripts are loaded in explicit order and some extend existing functions. Large architectural changes should preserve integrated tests and document changes to that order. Project edits should be undoable and obey locks; temporary preview/export state should not silently alter the project.
+
+## Desktop and MCP
+
+`desktop/main.cjs` owns the Electron window, safe save/close flow and MCP configuration menu. `desktop/backend.cjs` supervises the loopback engine and recovers its original port. The preload bridge keeps Node out of the renderer. `desktop/service.py` freezes both the HTTP service and JSON media worker into one executable, so released MCP clients do not require system Python.
+
+`mcp/store.cjs` provides revision-checked durable projects, copied media, undo/redo and atomic edits. `mcp/tools.cjs` exposes the editing surface; `mcp/workflow-tools.cjs` uses the shared `dist/editing-workflows.js` planning functions. `mcp/render.cjs` composites through native Skia and pipes every frame to FFmpeg; `mcp/media.cjs` handles decoders, audio and the frozen worker. Stdio and authenticated loopback Streamable HTTP share the same project store.
+
+Release layout: `Resources/backend` contains the frozen Python service and bundled tools/model; `Resources/mcp-runtime` contains Node, production dependencies, MCP source and shared editor modules. All executable/model paths resolve relative to the bundle rather than a developer's home. See [release builds](RELEASE_BUILD.md).
