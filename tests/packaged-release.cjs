@@ -12,7 +12,7 @@ function run(binary,args,input,env){return new Promise((resolve,reject)=>{const 
  try{
   const binary=path.join(resources,'backend/cutline-backend');
   const caps=JSON.parse(await run(binary,['--media-worker'],JSON.stringify({action:'capabilities'}),env));assert.equal(caps.transcription,true);assert.ok(caps.ffmpeg.startsWith(resources));
-  await client.connect(transport);assert.equal((await client.listTools()).tools.length,22);const mcpCaps=await call('cutline_capabilities');assert.equal(mcpCaps.headless,true);
+  await client.connect(transport);assert.equal((await client.listTools()).tools.length,28);const mcpCaps=await call('cutline_capabilities');assert.equal(mcpCaps.headless,true);
   const source=path.join(temp,'fixture.mp4');await run(path.join(resources,'backend/tools/ffmpeg'),['-v','error','-y','-f','lavfi','-i','testsrc2=size=160x90:rate=30:duration=2','-f','lavfi','-i','sine=frequency=440:duration=2','-c:v','libx264','-pix_fmt','yuv420p','-c:a','aac',source],null,env);
   let p=await call('cutline_project_create',{name:'Fresh installation QA',ratio:'16:9'}),projectId=p.id;
   p=await call('cutline_media_import',{projectId,expectedRevision:p.revision,path:source});const assetId=p.result.asset.id;
@@ -24,6 +24,6 @@ function run(binary,args,input,env){return new Promise((resolve,reject)=>{const 
   while(Date.now()<deadline){const j=await call('cutline_job',{jobId:job});if(j.status==='done'){result=j.result;break;}if(['failed','cancelled'].includes(j.status))throw Error(j.error||j.status);await new Promise(r=>setTimeout(r,100));}
   assert.equal(result?.frames,60);const check=JSON.parse(await run(binary,['--media-worker'],JSON.stringify({action:'scan',path:result.path}),env));assert.equal(check.frames,60);
   if(process.argv[3]){const speech=path.resolve(process.argv[3]);const transcript=JSON.parse(await run(binary,['--media-worker'],JSON.stringify({action:'transcribe',path:speech,language:'en'}),env));assert.match(transcript.srt,/\d\d:\d\d:\d\d[,\.]\d+/);assert.ok(transcript.srt.length>100,'real speech must produce timed text');console.log('PASS: bundled Whisper transcribed real speech with fresh HOME and no developer tools');}
-  console.log('PASS: release-owned Node, frozen Python worker, FFmpeg, local model, 22-tool MCP handshake, import, edits, captions, PNG preview and verified 60-frame MP4 in a clean environment');
+  console.log('PASS: release-owned Node, frozen Python worker, FFmpeg, local model, 28-tool MCP handshake, import, edits, captions, PNG preview and verified 60-frame MP4 in a clean environment');
  }finally{await client.close();await fs.rm(temp,{recursive:true,force:true});}
 })().catch(error=>{console.error(error);process.exitCode=1;});

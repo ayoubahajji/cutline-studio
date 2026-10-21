@@ -51,3 +51,19 @@ The Audio and Ad tools tabs include Voiceover edit controls: choose/import narra
 - `cutline_blur_region`: create a top/bottom text band or custom rectangle, or adjust an existing blur by ID. It never changes source framing. Select the region in the app to drag its interior or independently resize any edge/corner. Escape cancels a gesture; Undo restores it; locked tracks cannot be changed. Keyframed blur geometry records changes at the playhead.
 
 Hide unwanted source text with blur when requested. Cropping is a separate framing decision, not a substitute for covering English text.
+
+## Production tools (2.2)
+
+The Audio and Ad tools panels expose the same native production handlers as MCP. The Mac build includes its own Node runtime; no developer installation is required. Browser-only deployments keep the complete-frame fallback exporter when the native engine is unavailable.
+
+- `cutline_background_music`: choose an imported audio asset or the built-in original Bright momentum / Calm horizon instrumentals. Defaults to **7%**, no additional ducking. It loops and ends at the non-music timeline end, adds fades, replaces previous music only when requested, and supports Undo and audio-track locks. Existing narration and framing are untouched. These synthesized instrumentals are generated locally and need no third-party music license.
+- `cutline_render`: MP4 now adds an undoable built-in 7% music bed if no music-role clip exists. Set `music:false` for a deliberately music-free export. Existing music keeps the user's settings. WAV exports do not add music. Read the project again after the first automatic music addition before subsequent writes.
+- `cutline_media_inspect`: inspect an imported asset's streams, dimensions, duration, optional picture/freeze scan, and measured integrated LUFS / true peak.
+- `cutline_contact_sheet`: render exact timeline times into a labeled PNG (up to 24 frames). Use it for narrative and caption review; it does not open or alter the desktop timeline.
+- `cutline_audio_loudness`: `apply:false` measures voice-only audio by default; `scope:mix` measures the full mix. `apply:true` applies one uniform gain adjustment to all voice-role audio clips toward -17 LUFS, constrained by a -1 dB peak ceiling and the supported gain range. It reports `targetReached:false` when dynamics prevent reaching both targets without compression. It does not claim to restore distorted source audio.
+- `cutline_export_verify`: fully decode an absolute local MP4, check an optional exact frame count, and report picture duration, frozen intervals, LUFS, true peak and SHA-256. Frozen intervals are evidence for review, because an intentional still card can be valid.
+- `cutline_delivery_bundle`: one cancellable background job renders and verifies MP4, creates an editable `.cutline`, SRT, mixed WAV, opening/ending previews, measurement/checksum JSON, and an integrity-checked ZIP. Music defaults to 7% if absent; `music:false` opts out. Poll `cutline_job` and deliver only `status:done`.
+
+The app's **Music & finishing** controls include source inspection, voice measurement/balancing, contact sheets, footage checking, exported-MP4 verification and complete delivery ZIP. The export dialog has a default-on music checkbox. Finishing uses the native MCP compositor and a private snapshot copy; live desktop autosave is never read by MCP. App mutations map clip IDs back to the original edit, reject stale results, and create an Undo step.
+
+Job status includes `percent` (0–99 while working, 100 only after successful completion). Export phases include source checking, audio mixing, rendering, verification and packaging. Frame counts remain available for diagnostics; user-facing progress shows percentages. Gaussian blur extends source-edge pixels before filtering, preventing original text from showing through at the frame edge; preview and native export share the renderer.

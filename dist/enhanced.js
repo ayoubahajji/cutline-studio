@@ -182,16 +182,9 @@ function renderVisual(c,t,alpha=1){
  ctx.save();ctx.globalAlpha=p.opacity/100*alpha*Model.envelope(c,t);ctx.filter=`brightness(${c.brightness??100}%) contrast(${c.contrast??100}%) saturate(${c.saturation??100}%) ${effectFilters[c.filter]||''}`;
  ctx.translate(W/2+p.x/100*W,H/2+p.y/100*H);ctx.rotate(p.rotation*Math.PI/180);ctx.scale(c.flipX?-1:1,c.flipY?-1:1);ctx.drawImage(source,sx,sy,cw,ch,-cw*scale/2,-ch*scale/2,cw*scale,ch*scale);ctx.restore();
 }
-function applyBlur(c,t){
- const W=canvas.width,H=canvas.height,p=Model.poseAt(c,t-c.start),x=W*(.5+p.x/100-p.width/200),y=H*(.5+p.y/100-p.height/200),w=W*p.width/100,h=H*p.height/100;
- if(auxiliaryCanvas.width!==W||auxiliaryCanvas.height!==H){auxiliaryCanvas.width=W;auxiliaryCanvas.height=H;}
- auxiliaryContext.clearRect(0,0,W,H);auxiliaryContext.drawImage(canvas,0,0);
- ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();ctx.globalAlpha=p.opacity/100*Model.envelope(c,t);
- if(c.blurMode==='pixelate'){
-  const small=document.createElement('canvas');small.width=Math.max(1,Math.round(W/Math.max(6,c.blurRadius||20)));small.height=Math.max(1,Math.round(H/Math.max(6,c.blurRadius||20)));const sc=small.getContext('2d');sc.drawImage(auxiliaryCanvas,0,0,small.width,small.height);ctx.imageSmoothingEnabled=false;ctx.drawImage(small,0,0,W,H);
- }else{ctx.filter=`blur(${Math.max(1,(c.blurRadius||22)*H/1080)}px)`;ctx.drawImage(auxiliaryCanvas,0,0);}
- ctx.restore();
-}
+const productionBlur=CutlineBlurRenderer.create((w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c;});
+function applyBlur(c,t){const W=canvas.width,H=canvas.height,p=Model.poseAt(c,t-c.start);productionBlur(canvas,ctx,{x:W*(.5+p.x/100-p.width/200),y:H*(.5+p.y/100-p.height/200),width:W*p.width/100,height:H*p.height/100,radius:c.blurRadius||22,mode:c.blurMode,opacity:p.opacity/100*Model.envelope(c,t)});}
+
 function wrapCanvasText(text,maxWidth){const lines=[];for(const raw of text.split('\n')){const words=raw.split(/\s+/);let line='';for(const word of words){const next=line?line+' '+word:word;if(line&&ctx.measureText(next).width>maxWidth){lines.push(line);line=word;}else line=next;}lines.push(line);}return lines;}
 function renderText(c,t){
  const W=canvas.width,H=canvas.height,p=Model.poseAt(c,t-c.start),factor=H/1080;ctx.save();ctx.translate(W/2+p.x/100*W,H/2+p.y/100*H);ctx.rotate(p.rotation*Math.PI/180);ctx.scale(p.scale/100,p.scale/100);ctx.font=`${c.fontWeight||600} ${c.fontSize*factor}px -apple-system, BlinkMacSystemFont, Arial, sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.direction=/[\u0600-\u06ff]/.test(c.text)?'rtl':'ltr';ctx.globalAlpha=p.opacity/100*Model.envelope(c,t);

@@ -1,6 +1,6 @@
 # Install Cutline Studio on an Apple Silicon Mac
 
-Download the `.dmg` and `SHA256SUMS.txt` from [GitHub Releases](https://github.com/ayoubahajji/cutline-studio/releases/tag/v2.1.0). Use macOS 13.5+ on an M1/M2/M3/M4/M5 Mac. This release does not run on Intel. Minimum 8 GB RAM; 16 GB recommended. Allow about 3 GB of disk space for installation, plus project/export space.
+Download the `.dmg` and `SHA256SUMS.txt` from [GitHub Releases](https://github.com/ayoubahajji/cutline-studio/releases/tag/v2.2.0). Use macOS 13.5+ on an M1/M2/M3/M4/M5 Mac. This release does not run on Intel. Minimum 8 GB RAM; 16 GB recommended. Allow about 3 GB of disk space for installation, plus project/export space.
 
 Open the disk image, drag **Cutline Studio** into **Applications**, eject the image and launch from Applications. Whisper, the large-v3-turbo quantized model, FFmpeg, Python and the MCP Node runtime are included. Editing and transcription work offline. Your AI client may require its own internet connection, account or paid plan.
 
@@ -11,7 +11,7 @@ This release is ad-hoc signed and **not Apple notarized**. A download can theref
 Optionally verify the downloaded image in Terminal, from its download folder:
 
 ```sh
-shasum -a 256 Cutline-Studio-2.1.0-mac-arm64.dmg
+shasum -a 256 Cutline-Studio-2.2.0-mac-arm64.dmg
 ```
 
 Compare the result with `SHA256SUMS.txt` on the release page. A matching checksum confirms the file matches that release, not that it has been independently audited.

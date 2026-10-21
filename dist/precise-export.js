@@ -36,10 +36,10 @@ startExport=async function(){
    drawFrame();const blob=await new Promise((resolve,reject)=>canvas.toBlob(value=>value?resolve(value):reject(new Error('Could not encode the video frame.')),'image/jpeg',.95));batch.push(blob);
    if(batch.length===10||index===frames-1){
     const response=await frameExportRequest('/'+preciseExportJob+'/frames',{method:'POST',headers:{'Content-Type':'application/octet-stream','X-Cutline-First-Frame':String(first)},body:await CutlineExportFrames.packet(batch)});const result=await response.json();if(result.received!==index+1)throw new Error('The encoder did not receive every frame.');first=index+1;batch=[];
-    $('#export-progress i').style.width=(first/frames*100)+'%';setStatus(`Rendering every frame · ${first} / ${frames} · ${Math.round(first/frames*100)}%`);await new Promise(resolve=>setTimeout(resolve,0));
+    $('#export-progress i').style.width=(10+first/frames*80)+'%';setStatus(`Rendering · ${Math.floor(10+first/frames*80)}%`);await new Promise(resolve=>setTimeout(resolve,0));
    }
   }
-  setStatus('Finishing complete MP4 and audio…');const response=await frameExportRequest('/'+preciseExportJob+'/finish',{method:'POST'});const result=await response.blob();preciseExportJob=null;if(exportCancelled)return;download(result,slug()+'.mp4');toast('Complete video exported. Every frame was rendered.');$('#export-dialog').close();
+  $('#export-progress i').style.width='95%';setStatus('Encoding and checking · 95%');const response=await frameExportRequest('/'+preciseExportJob+'/finish',{method:'POST'});const result=await response.blob();preciseExportJob=null;if(exportCancelled)return;download(result,slug()+'.mp4');toast('Complete video exported. Every frame was rendered.');$('#export-dialog').close();
  }catch(e){if(e.name!=='AbortError'){setStatus('Export stopped: '+e.message);if(!e.sourceReview)toast('Export stopped: '+e.message);}else{$('#export-dialog').close();toast('Export cancelled.');}}
  finally{
   if(preciseExportJob){await fetch('/api/frame-exports/'+preciseExportJob+'/cancel',{method:'POST'}).catch(()=>{});preciseExportJob=null;}

@@ -9,6 +9,9 @@ def main():
     parser=argparse.ArgumentParser();parser.add_argument('--install',action='store_true');parser.add_argument('--release',action='store_true');args=parser.parse_args()
     if sys.platform!='darwin':raise SystemExit('The Mac application must be built on macOS.')
     if args.release and platform.machine()!='arm64':raise SystemExit('This release recipe targets Apple Silicon only.')
+    if args.install:
+        running=subprocess.run(['ps','-axo','command='],capture_output=True,text=True,check=True).stdout.splitlines()
+        if any(line.startswith('/Applications/Cutline Studio.app/Contents/') for line in running):raise SystemExit('Quit Cutline Studio normally before installation so its open project can save safely.')
     electron=ROOT/'node_modules/electron/dist/Electron.app'
     if not electron.is_dir():raise SystemExit('Run npm install and node node_modules/electron/install.js first.')
     engine=BUILD/'resources/backend-build'
@@ -38,26 +41,26 @@ def main():
         shutil.copy2(pyinstaller,resources/'licenses/PYINSTALLER-COPYING.txt')
         shutil.copy2(deps/'provenance.json',resources/'provenance.json')
         (tools/'FFMPEG-LICENSE.txt').write_bytes(subprocess.run([str(tools/'ffmpeg'),'-L'],capture_output=True,check=True).stderr)
-        runtime=resources/'mcp-runtime';runtime.mkdir();(runtime/'bin').mkdir()
-        node=shutil.which('node')
-        if not node:raise SystemExit('Node.js is required at build time.')
-        shutil.copy2(node,runtime/'bin/node')
-        node_license=Path(node).resolve().parent.parent/'LICENSE'
-        if not node_license.exists():raise SystemExit('Node distribution LICENSE is required.')
-        shutil.copy2(node_license,runtime/'NODE-LICENSE.txt')
-        shutil.copytree(ROOT/'mcp',runtime/'mcp',ignore=shutil.ignore_patterns('__pycache__'))
-        (runtime/'dist').mkdir()
-        for name in ['editor-model.js','editing-workflows.js','frame-geometry.js','audio-editing.js','source-check.js']:shutil.copy2(ROOT/'dist'/name,runtime/'dist'/name)
-        for name in ['package.json','package-lock.json','LICENSE','THIRD_PARTY.md']:shutil.copy2(ROOT/name,runtime/name)
-        subprocess.run(['npm','ci','--omit=dev','--ignore-scripts','--no-audit','--no-fund'],cwd=runtime,check=True)
-        subprocess.run([str(runtime/'bin/node'),'-e',"require('./mcp/tools.cjs').createTools()"],cwd=runtime,check=True)
+    runtime=resources/'mcp-runtime';runtime.mkdir();(runtime/'bin').mkdir()
+    node=shutil.which('node')
+    if not node:raise SystemExit('Node.js is required at build time.')
+    shutil.copy2(node,runtime/'bin/node')
+    node_license=Path(node).resolve().parent.parent/'LICENSE'
+    if not node_license.exists():raise SystemExit('Node distribution LICENSE is required.')
+    shutil.copy2(node_license,runtime/'NODE-LICENSE.txt')
+    shutil.copytree(ROOT/'mcp',runtime/'mcp',ignore=shutil.ignore_patterns('__pycache__'))
+    (runtime/'dist').mkdir()
+    for name in ['production-core.js','blur-renderer.js','editor-model.js','editing-workflows.js','frame-geometry.js','audio-editing.js','source-check.js']:shutil.copy2(ROOT/'dist'/name,runtime/'dist'/name)
+    for name in ['package.json','package-lock.json','LICENSE','THIRD_PARTY.md']:shutil.copy2(ROOT/name,runtime/name)
+    subprocess.run(['npm','ci','--omit=dev','--ignore-scripts','--no-audit','--no-fund'],cwd=runtime,check=True)
+    subprocess.run([str(runtime/'bin/node'),'-e',"require('./mcp/tools.cjs').createTools()"],cwd=runtime,check=True)
     for name in ['LICENSE','THIRD_PARTY.md']:shutil.copy2(ROOT/name,resources/name)
     icon=ROOT/'desktop/assets/Cutline.icns'
     if icon.exists():shutil.copy2(icon,resources/'Cutline.icns')
     info=contents/'Info.plist'
     with info.open('rb') as stream:configuration=plistlib.load(stream)
     executable=configuration['CFBundleExecutable'];(contents/'MacOS'/executable).rename(contents/'MacOS/Cutline Studio')
-    configuration.update({'CFBundleExecutable':'Cutline Studio','CFBundleName':'Cutline Studio','CFBundleDisplayName':'Cutline Studio','CFBundleIdentifier':'studio.cutline.desktop','CFBundleShortVersionString':version,'CFBundleVersion':'210','LSMinimumSystemVersion':'13.5','CFBundleIconFile':'Cutline.icns','NSHighResolutionCapable':True,'NSHumanReadableCopyright':'Copyright 2026 Cutline Studio contributors','CFBundleDocumentTypes':[{'CFBundleTypeName':'Cutline Studio Project','CFBundleTypeExtensions':['cutline'],'CFBundleTypeRole':'Editor','LSHandlerRank':'Owner'}]})
+    configuration.update({'CFBundleExecutable':'Cutline Studio','CFBundleName':'Cutline Studio','CFBundleDisplayName':'Cutline Studio','CFBundleIdentifier':'studio.cutline.desktop','CFBundleShortVersionString':version,'CFBundleVersion':version,'LSMinimumSystemVersion':'13.5','CFBundleIconFile':'Cutline.icns','NSHighResolutionCapable':True,'NSHumanReadableCopyright':'Copyright 2026 Cutline Studio contributors','CFBundleDocumentTypes':[{'CFBundleTypeName':'Cutline Studio Project','CFBundleTypeExtensions':['cutline'],'CFBundleTypeRole':'Editor','LSHandlerRank':'Owner'}]})
     with info.open('wb') as stream:plistlib.dump(configuration,stream)
     # Sign nested native files before the app envelope. The community build is ad-hoc.
     if args.release:

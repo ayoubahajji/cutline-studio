@@ -2,7 +2,7 @@ const fs=require('node:fs'),assert=require('node:assert/strict'),{JSDOM}=require
 const dom=new JSDOM(fs.readFileSync('dist/index.html','utf8'),{runScripts:'outside-only',url:'http://localhost/'}),w=dom.window;
 const ctx=new Proxy({measureText:()=>({width:100}),createLinearGradient:()=>({addColorStop(){}})},{get:(o,k)=>k in o?o[k]:()=>{}});
 w.HTMLCanvasElement.prototype.getContext=()=>ctx;w.HTMLMediaElement.prototype.pause=()=>{};w.fetch=async()=>({json:async()=>({})});w.requestAnimationFrame=()=>0;
-const files=['editor-model.js','frame-geometry.js','timeline-interactions.js','app.js','enhanced.js','audio-editing.js','audio-workspace.js','multi-selection.js','preview-transform.js'];let source=files.map(f=>fs.readFileSync('dist/'+f,'utf8')).join('\n').replace("bootstrap().catch(e=>{console.error(e);toast('Could not start: '+e.message);});",'');
+const files=['editor-model.js','frame-geometry.js','timeline-interactions.js','app.js','blur-renderer.js','enhanced.js','audio-editing.js','audio-workspace.js','multi-selection.js','preview-transform.js'];let source=files.map(f=>fs.readFileSync('dist/'+f,'utf8')).join('\n').replace("bootstrap().catch(e=>{console.error(e);toast('Could not start: '+e.message);});",'');
 w.eval(source+`\nwindow.api={reset(track='audio'){
  const buffer={sampleRate:1000,length:10000,numberOfChannels:1,getChannelData:()=>new Float32Array(10000)};assets.set('fixture',{id:'fixture',type:'audio',name:'Fixture.wav',duration:10,audioBuffer:buffer});
  project={name:'test',ratio:'16:9',clips:[0,1,2].map((x)=>({...defaultClip(assets.get('fixture'),1+x*3),id:'c'+x,track,duration:2,text:'Caption '+x,fontSize:40,color:'#ffffff'})),muted:{},locked:{}};past=[];future=[];setSelection(['c0']);playhead=2;hydrate();renderAll();

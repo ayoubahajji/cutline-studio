@@ -23,7 +23,7 @@ This is an early-stage editor for short ads, not a complete replacement for a ma
 
 ## Download the Mac application
 
-[Download Cutline Studio 2.1.0 for Apple Silicon](https://github.com/ayoubahajji/cutline-studio/releases/download/v2.1.0/Cutline-Studio-2.1.0-mac-arm64.dmg)
+[Download Cutline Studio 2.2.0 for Apple Silicon](https://github.com/ayoubahajji/cutline-studio/releases/download/v2.2.0/Cutline-Studio-2.2.0-mac-arm64.dmg)
 
 For M1–M5 Macs on **macOS 13.5 or newer**. The community build includes Electron, Python, FFmpeg/x264, local Whisper large-v3-turbo (quantized model), and the complete Node-based MCP runtime. No Homebrew, Xcode, npm or separate speech-model installation is needed to use it. Allow about 3 GB for installation, plus space for projects and exports; 8 GB RAM minimum, 16 GB recommended. Intel/Windows binaries are not provided.
 
@@ -32,7 +32,7 @@ For M1–M5 Macs on **macOS 13.5 or newer**. The community build includes Electr
 3. This community build is **ad-hoc signed, not Apple notarized**. If macOS blocks first launch, try opening it once, then use **System Settings → Privacy & Security → Open Anyway** only if you trust this release. See [Apple's instructions](https://support.apple.com/en-us/102445). Do not disable Gatekeeper globally.
 4. Import footage, edit and save a `.cutline` backup. For AI clients, open **Cutline Studio → MCP setup…** and copy the local MCP configuration.
 
-[Installation, troubleshooting and MCP setup](docs/MAC_INSTALL.md) · [Release checksums](https://github.com/ayoubahajji/cutline-studio/releases/tag/v2.1.0) · [Quality checks and limits](docs/QUALITY_CHECK.md) · [Build the app from source](docs/RELEASE_BUILD.md)
+[Installation, troubleshooting and MCP setup](docs/MAC_INSTALL.md) · [Release checksums](https://github.com/ayoubahajji/cutline-studio/releases/tag/v2.2.0) · [Quality checks and limits](docs/QUALITY_CHECK.md) · [Build the app from source](docs/RELEASE_BUILD.md)
 
 The app starts and supervises its local engine. Desktop autosave is separate from browser autosave and MCP projects; portable `.cutline` files transfer edits between them. Closing flushes autosave and asks before cancelling an active export. There is no automatic update service; download new releases manually. Keep your project backups.
 
@@ -151,3 +151,9 @@ Bug reports, usability improvements, caption tools, export reliability, and docu
 ## Edit through MCP
 
 Cutline also has 22 MCP tools for assistants and local server-to-server workflows: project editing, layers, captions, blur, audio cleanup, preview images, verified MP4/WAV exports, undo and editable project handoff. The Mac release bundles its own MCP runtime; use **MCP setup…** in the app menu. Source developers can run `npm run mcp:install` to install a managed runtime and register `cutline_studio` in Codex. It starts on demand and does not need the app window or browser server to stay open. See [MCP setup and capabilities](docs/MCP.md) and the [editing guide](mcp/GUIDE.md).
+
+### Music and production finishing (2.2)
+
+Audio / Ad tools → **Music & finishing** adds original local instrumental music at **7%**, voice loudness measurement and balancing, source inspection, contact sheets, exported-video checks, and a complete delivery ZIP (MP4, editable project, subtitles, mixed audio, previews and checksum report). All six production tools are also available through MCP.
+
+MP4 export uses the native engine when installed, checks the source and completed output, and reports progress as a percentage. Music is enabled by default when no music track exists; uncheck it for a music-free export. Existing music keeps your chosen settings. Unsupported or interrupted exports stop with an error and do not download an incomplete video. No software can guarantee every source file is error-free; inspect the delivered previews and verification report.

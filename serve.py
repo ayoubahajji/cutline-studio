@@ -12,6 +12,9 @@ import subprocess
 from urllib.parse import urlparse
 import transcription
 import video_export
+import production_jobs
+import mimetypes
+import shutil
 
 ROOT = Path(__file__).resolve().parent
 MARKER = 'Cutline Studio local editor v1'
@@ -36,6 +39,19 @@ class Handler(SimpleHTTPRequestHandler):
         return True
     def do_POST(self):
         if not self.valid_local_request():
+            return
+        if self.path == '/api/production/jobs' or self.path.startswith('/api/production/jobs/'):
+            try:
+                parts=self.path.split('/')
+                if self.path == '/api/production/jobs':
+                    length=int(self.headers.get('Content-Length','0'))
+                    if not 2<=length<=768*1024*1024:raise ValueError('Project must be under 768 MB.')
+                    body=self.rfile.read(length)
+                    if len(body)!=length:raise ValueError('Incomplete project upload.')
+                    self.api_json(production_jobs.submit(json.loads(body)),201)
+                elif len(parts)==6 and parts[5]=='cancel':self.api_json({'cancelled':production_jobs.cancel(parts[4])})
+                else:self.api_json({'error':'Unknown production endpoint.'},404)
+            except (ValueError,OSError) as error:self.api_json({'error':str(error)},400)
             return
         if self.path == '/api/check-video':
             try:
@@ -125,11 +141,23 @@ class Handler(SimpleHTTPRequestHandler):
         except (ValueError, OSError) as error:
             self.api_json({'error':str(error)}, 400)
     def do_GET(self):
+        if self.path.startswith('/api/production/jobs/'):
+            if not self.valid_local_request():return
+            try:
+                parts=self.path.split('/')
+                if len(parts)==5:self.api_json(production_jobs.status(parts[4]))
+                elif len(parts)==7 and parts[5]=='files':
+                    file=production_jobs.artifact(parts[4],int(parts[6]))
+                    self.send_response(200);self.send_header('Content-Type',mimetypes.guess_type(file.name)[0] or 'application/octet-stream');self.send_header('Content-Length',str(file.stat().st_size));self.end_headers()
+                    with file.open('rb') as stream:shutil.copyfileobj(stream,self.wfile)
+                else:self.api_json({'error':'Unknown production endpoint.'},404)
+            except (ValueError,OSError) as error:self.api_json({'error':str(error)},400)
+            return
         if self.path.startswith('/api/'):
             if not self.valid_local_request():
                 return
             if self.path == '/api/capabilities':
-                self.api_json({'transcription':transcription.available(), 'engine':'Whisper local', 'mp4_finishing':video_export.available(), 'frame_export':video_export.available(), 'video_check':video_export.available()})
+                self.api_json({'production':production_jobs.available(), 'transcription':transcription.available(), 'engine':'Whisper local', 'mp4_finishing':video_export.available(), 'frame_export':video_export.available(), 'video_check':video_export.available()})
             elif self.path.startswith('/api/jobs/'):
                 job = transcription.status(self.path.split('/')[3])
                 self.api_json(job or {'error':'Transcription job not found.'}, 200 if job else 404)

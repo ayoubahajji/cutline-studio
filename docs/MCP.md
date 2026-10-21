@@ -1,6 +1,6 @@
 # Cutline Studio MCP
 
-Cutline can be used by an assistant or another service through Model Context Protocol. Its 22 tools provide durable projects, timeline edits, audio cleanup, subtitles, image previews, complete MP4/WAV rendering, background jobs and portable desktop project handoff. No browser window, browser automation or running desktop server is required.
+Cutline can be used by an assistant or another service through Model Context Protocol. Its 28 tools provide durable projects, timeline edits, audio cleanup, subtitles, image previews, complete MP4/WAV rendering, background jobs and portable desktop project handoff. No browser window, browser automation or running desktop server is required.
 
 ## Mac application (recommended)
 
@@ -82,3 +82,9 @@ npm run check:mcp:encoder
 The first suite uses real stdio and Streamable HTTP MCP clients, actual FFmpeg media and PNG pixels. It checks tool discovery, revisions/rollback, locks, undo, selected-only silence edits, captions, native compositing, MP4/WAV delivery, portable reopen and HTTP auth. The longer regression renders/decodes all 1,818 frames through a 60.6-second three-scene timeline, checks wipe/slide transitions, refuses source overrun, and verifies cancellation cleanup. Tests use temporary generated media and never open user projects.
 
 Protocol implementation uses the [official MCP SDK](https://ts.sdk.modelcontextprotocol.io/server). Client registration follows [OpenAI's MCP documentation](https://learn.chatgpt.com/docs/extend/mcp?surface=cli).
+
+### Production finishing
+
+Read [the production tool guide](../mcp/GUIDE.md#production-tools-22) for `cutline_background_music`, `cutline_media_inspect`, `cutline_contact_sheet`, `cutline_audio_loudness`, `cutline_export_verify`, and `cutline_delivery_bundle`. Prefer these tools to assistant-written media-analysis, packaging or audio-processing scripts. MP4 export adds music at 7% if absent; set `music:false` when deliberately exporting without a music bed. Read the updated revision before subsequent edits.
+
+A running client's tool catalog may remain cached after an update. A fresh MCP connection loads all 28 tools. The standard SDK client (`mcp/client.cjs`) can use the updated engine immediately without automating the browser.

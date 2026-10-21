@@ -6,6 +6,16 @@ import video_export,transcription
 
 def main():
     request=json.load(sys.stdin);action=request['action']
+    if action=='zip':
+        import zipfile
+        target=Path(request['path'])
+        with zipfile.ZipFile(target,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=1) as archive:
+            for item in request['files']:
+                file=Path(item)
+                archive.write(file,file.name)
+        with zipfile.ZipFile(target) as archive:
+            if archive.testzip():raise ValueError('Delivery archive failed integrity verification')
+        return {'path':str(target),'files':len(request['files'])}
     if action=='scan':return video_export.inspect_video(Path(request['path']).read_bytes())
     if action=='capabilities':return {'ffmpeg':str(video_export.BINARY or ''),'transcription':transcription.available()}
     if action=='transcribe':

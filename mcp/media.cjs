@@ -9,8 +9,8 @@ for(const [key,name] of [['CUTLINE_WHISPER_BINARY','whisper-cli'],['CUTLINE_WHIS
 const PYTHON=process.env.CUTLINE_PYTHON||(process.platform==='darwin'?'/usr/bin/python3':'python3');
 function processRun(binary,args,{input,signal,maxBytes=256*1024*1024,timeout=240000}={}){
  return new Promise((resolve,reject)=>{
-  const child=spawn(binary,args,{stdio:['pipe','pipe','pipe'],signal,detached:process.platform!=='win32',env:{...process.env,CUTLINE_FFMPEG_BINARY:FFMPEG}});let chunks=[],bytes=0,errors='',failure;
-  const killGroup=()=>{if(child.pid&&process.platform!=='win32'){try{process.kill(-child.pid,'SIGKILL');}catch{}}else child.kill('SIGKILL');};const abort=()=>killGroup();signal?.addEventListener('abort',abort,{once:true});
+  const detached=process.platform!=='win32'&&!process.env.CUTLINE_APP_WORKER;const child=spawn(binary,args,{stdio:['pipe','pipe','pipe'],signal,detached,env:{...process.env,CUTLINE_FFMPEG_BINARY:FFMPEG}});let chunks=[],bytes=0,errors='',failure;
+  const killGroup=()=>{if(child.pid&&detached){try{process.kill(-child.pid,'SIGKILL');}catch{}}else child.kill('SIGKILL');};const abort=()=>killGroup();signal?.addEventListener('abort',abort,{once:true});
   const timer=setTimeout(()=>{failure=new Error('Media operation timed out.');killGroup();},timeout);timer.unref();
   child.on('error',error=>{clearTimeout(timer);reject(error);});child.stdout.on('data',chunk=>{bytes+=chunk.length;if(bytes>maxBytes){failure=new Error('Decoded media exceeds the memory limit; use a shorter selection.');killGroup();}else chunks.push(chunk);});
   child.stderr.on('data',data=>errors=(errors+data).slice(-16000));child.on('close',code=>{clearTimeout(timer);signal?.removeEventListener('abort',abort);if(failure||code){const error=failure||new Error(errors||'Media process failed.');error.output=Buffer.concat(chunks);reject(error);}else resolve({data:Buffer.concat(chunks),errors});});child.stdin.on('error',()=>{});child.stdin.end(input);

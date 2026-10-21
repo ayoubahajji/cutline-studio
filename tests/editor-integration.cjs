@@ -3,7 +3,7 @@ const fs=require('node:fs'),assert=require('node:assert/strict'),{JSDOM}=require
  const dom=new JSDOM(fs.readFileSync('dist/index.html','utf8'),{runScripts:'outside-only',url:'http://localhost/'}),w=dom.window;
  const context=new Proxy({measureText:()=>({width:100}),createLinearGradient:()=>({addColorStop(){}})},{get:(o,k)=>k in o?o[k]:()=>{}});
  w.HTMLCanvasElement.prototype.getContext=()=>context;w.HTMLMediaElement.prototype.pause=()=>{};w.fetch=async()=>({json:async()=>({})});w.requestAnimationFrame=()=>0;
- const files=['editor-model.js','frame-geometry.js','timeline-interactions.js','app.js','enhanced.js','audio-editing.js','audio-workspace.js','multi-selection.js','preview-transform.js'];let source=files.map(f=>fs.readFileSync('dist/'+f,'utf8')).join('\n');source=source.replace("bootstrap().catch(e=>{console.error(e);toast('Could not start: '+e.message);});",'');
+ const files=['editor-model.js','frame-geometry.js','timeline-interactions.js','app.js','blur-renderer.js','enhanced.js','audio-editing.js','audio-workspace.js','multi-selection.js','preview-transform.js'];let source=files.map(f=>fs.readFileSync('dist/'+f,'utf8')).join('\n');source=source.replace("bootstrap().catch(e=>{console.error(e);toast('Could not start: '+e.message);});",'');
  w.eval(source+`\n(async()=>{
  const buffer={sampleRate:1000,length:4000,numberOfChannels:1,getChannelData:()=>Float32Array.from({length:4000},(_,i)=>i>=1000&&i<2000?0:.3)};
  assets.set('fixture',{id:'fixture',type:'audio',name:'Fixture.wav',duration:4,audioBuffer:buffer});
