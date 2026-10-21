@@ -64,3 +64,7 @@ A real local HTTP test exercises app → MCP handlers, source ID mapping, comple
 The signed community Mac bundle was tested with fresh HOME and PATH=/nonexistent: bundled Node, frozen Python, FFmpeg and all 28 MCP tools worked. A separate packaged app-service test generated a complete 60-frame ad with music at 7%, editable project, subtitles, WAV, previews and checksum report in an integrity-checked ZIP. The actual music mix was measured and remained quiet. This is an ad-hoc community signature, not Apple notarization.
 
 These checks cover tested sources and failure paths; they do not promise that every damaged codec, source recording or creative edit will succeed. Failed verification does not download an incomplete export. Voice balancing reports when the requested LUFS and peak ceiling cannot both be reached without compression.
+
+### Source-review compatibility patch (2.2.1)
+
+The native path preserves the existing explicit source-review flow. A source-validation failure opens the reviewed complete-frame path, where users can replace footage, deliberately accept an intentional still source, or explicitly export only the available picture range. Those explicit exceptions use the already-verified complete-frame encoder. Ordinary native encoder failures never silently fall back or download an incomplete file. UI regression tests cover both routing decisions; the existing actual export tests cover accepted still footage and the explicit safe picture range.

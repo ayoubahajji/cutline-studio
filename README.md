@@ -23,7 +23,7 @@ This is an early-stage editor for short ads, not a complete replacement for a ma
 
 ## Download the Mac application
 
-[Download Cutline Studio 2.2.0 for Apple Silicon](https://github.com/ayoubahajji/cutline-studio/releases/download/v2.2.0/Cutline-Studio-2.2.0-mac-arm64.dmg)
+[Download Cutline Studio 2.2.1 for Apple Silicon](https://github.com/ayoubahajji/cutline-studio/releases/download/v2.2.1/Cutline-Studio-2.2.1-mac-arm64.dmg)
 
 For M1–M5 Macs on **macOS 13.5 or newer**. The community build includes Electron, Python, FFmpeg/x264, local Whisper large-v3-turbo (quantized model), and the complete Node-based MCP runtime. No Homebrew, Xcode, npm or separate speech-model installation is needed to use it. Allow about 3 GB for installation, plus space for projects and exports; 8 GB RAM minimum, 16 GB recommended. Intel/Windows binaries are not provided.
 
@@ -32,7 +32,7 @@ For M1–M5 Macs on **macOS 13.5 or newer**. The community build includes Electr
 3. This community build is **ad-hoc signed, not Apple notarized**. If macOS blocks first launch, try opening it once, then use **System Settings → Privacy & Security → Open Anyway** only if you trust this release. See [Apple's instructions](https://support.apple.com/en-us/102445). Do not disable Gatekeeper globally.
 4. Import footage, edit and save a `.cutline` backup. For AI clients, open **Cutline Studio → MCP setup…** and copy the local MCP configuration.
 
-[Installation, troubleshooting and MCP setup](docs/MAC_INSTALL.md) · [Release checksums](https://github.com/ayoubahajji/cutline-studio/releases/tag/v2.2.0) · [Quality checks and limits](docs/QUALITY_CHECK.md) · [Build the app from source](docs/RELEASE_BUILD.md)
+[Installation, troubleshooting and MCP setup](docs/MAC_INSTALL.md) · [Release checksums](https://github.com/ayoubahajji/cutline-studio/releases/tag/v2.2.1) · [Quality checks and limits](docs/QUALITY_CHECK.md) · [Build the app from source](docs/RELEASE_BUILD.md)
 
 The app starts and supervises its local engine. Desktop autosave is separate from browser autosave and MCP projects; portable `.cutline` files transfer edits between them. Closing flushes autosave and asks before cancelling an active export. There is no automatic update service; download new releases manually. Keep your project backups.
 

@@ -1,6 +1,6 @@
 {
   "name": "cutline-studio",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "private": true,
   "description": "A local Mac and browser video editor for ecommerce ads, with offline captions, audio cleanup, blur, layers and MCP.",
   "scripts": {
