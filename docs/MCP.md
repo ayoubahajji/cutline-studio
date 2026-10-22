@@ -1,6 +1,6 @@
 # Cutline Studio MCP
 
-Cutline can be used by an assistant or another service through Model Context Protocol. Its 28 tools provide durable projects, timeline edits, audio cleanup, subtitles, image previews, complete MP4/WAV rendering, background jobs and portable desktop project handoff. No browser window, browser automation or running desktop server is required.
+Cutline can be used by an assistant or another service through Model Context Protocol. Its 29 tools provide durable projects, timeline edits, audio cleanup, subtitles, image previews, complete MP4/WAV rendering, background jobs and portable desktop project handoff. No browser window, browser automation or running desktop server is required.
 
 ## Mac application (recommended)
 
@@ -87,4 +87,6 @@ Protocol implementation uses the [official MCP SDK](https://ts.sdk.modelcontextp
 
 Read [the production tool guide](../mcp/GUIDE.md#production-tools-22) for `cutline_background_music`, `cutline_media_inspect`, `cutline_contact_sheet`, `cutline_audio_loudness`, `cutline_export_verify`, and `cutline_delivery_bundle`. Prefer these tools to assistant-written media-analysis, packaging or audio-processing scripts. MP4 export adds music at 7% if absent; set `music:false` when deliberately exporting without a music bed. Read the updated revision before subsequent edits.
 
-A running client's tool catalog may remain cached after an update. A fresh MCP connection loads all 28 tools. The standard SDK client (`mcp/client.cjs`) can use the updated engine immediately without automating the browser.
+A running client's tool catalog may remain cached after an update. A fresh MCP connection loads all 29 tools. The standard SDK client (`mcp/client.cjs`) can use the updated engine immediately without automating the browser.
+
+`cutline_layer_add` uses the same TypeScript placement rules as the app. Choose an imported image/video and optionally `overClipId` or an exact `at` time. Photos default to contain at 60%, overlap the base, and stop at its end. Main timing/framing is preserved and locked Main footage can receive an unlocked overlay.

@@ -67,3 +67,11 @@ The Audio and Ad tools panels expose the same native production handlers as MCP.
 The app's **Music & finishing** controls include source inspection, voice measurement/balancing, contact sheets, footage checking, exported-MP4 verification and complete delivery ZIP. The export dialog has a default-on music checkbox. Finishing uses the native MCP compositor and a private snapshot copy; live desktop autosave is never read by MCP. App mutations map clip IDs back to the original edit, reject stale results, and create an Undo step.
 
 Job status includes `percent` (0–99 while working, 100 only after successful completion). Export phases include source checking, audio mixing, rendering, verification and packaging. Frame counts remain available for diagnostics; user-facing progress shows percentages. Gaussian blur extends source-edge pixels before filtering, preventing original text from showing through at the frame edge; preview and native export share the renderer.
+
+## Layering and timeline display (2.3)
+
+The media library offers explicit **Layer** and **Append** actions. Clicking a photo when footage exists adds a contained overlay at the playhead; a cursor at the end falls back over the selected/nearest main clip. A photo stops at the base ending by default, without changing the base. Explicit Main-row/Append placement remains sequential. Layers-card dragging retains layer intent, preview drops overlay visual media, and multiple photos dropped as layers share the same time. Audio still routes independently to Audio. Existing clip moves preserve saved transforms and timing.
+
+`cutline_layer_add` shares these typed placement rules: `assetId`, optional `overClipId`, optional exact `at`, and the current revision. It adds to Layers only and never moves/appends the base. Photo defaults are contain/60%; video layers preserve the previous full-frame default. Undo and destination locks apply.
+
+Timeline waveforms now use cached exact stereo min/max peaks with visible-window HiDPI Canvas painting, source trims/speed and fades. Blue/teal channels stay separate; silence is shown as a baseline. Volume/role labels remain separate from source-waveform scaling. Scene strips sample chronological source times through independent paused decoders, with bounded decoder and frame caches. These are Cutline implementations, not recovered CapCut source code.

@@ -83,7 +83,7 @@ renderLibrary=function(){
   $$('[data-ad-ratio]',root).forEach(b=>b.onclick=()=>setRatio(b.dataset.adRatio));$('#ad-blur').onclick=beginBlur;$$('[data-ad-text]',root).forEach(b=>b.onclick=()=>addAdText(b.dataset.adText));$$('[data-sticker]',root).forEach(b=>b.onclick=()=>{if(!addText())return;Object.assign(current(),{text:b.dataset.sticker,name:'Sticker',fontSize:180,color:'#64e6d2',y:15});commit();});
  }
 };
-function addOverlay(id,at=playhead){if(exporting)return;if(project.locked.overlay)return toast('Unlock the Layers track first.');const a=assets.get(id);if(!a||a.type==='audio')return;checkpoint();const c={...defaultClip(a,at),track:'overlay',scale:100,fit:'cover',layer:Math.max(0,...project.clips.filter(x=>x.track==='overlay').map(x=>x.layer||0))+1};project.clips.push(c);selected=c.id;commit();return c;}
+function addOverlay(id,at){return addAsset(id,at,'overlay');}
 function addAdText(type){
  if(!addText())return;const presets={hook:{text:'STOP SCROLLING.',fontSize:104,y:-26,color:'#ffffff',background:true,bgColor:'#14181e'},benefit:{text:'A SMALL CHANGE.\nA BIG DIFFERENCE.',fontSize:96,y:0,color:'#ffffff',background:false},offer:{text:'SPECIAL OFFER',fontSize:96,y:22,color:'#112521',background:true,bgColor:'#64e6d2'},cta:{text:'ORDER TODAY →',fontSize:86,y:30,color:'#112521',background:true,bgColor:'#64e6d2'}};Object.assign(current(),presets[type],{bgOpacity:100});commit();
 }
@@ -387,6 +387,6 @@ cancelExport=function(){if(exportFinalizing){exportCancelled=true;finalizeAbort?
 $('#cancel-export').onclick=cancelExport;
 
 const addMediaBeforeLocks=addAsset;
-addAsset=function(id,at){const asset=assets.get(id),track=asset?.type==='audio'?'audio':'video';if(project.locked[track])return toast('Unlock the destination track first.');return addMediaBeforeLocks(id,at);};
+addAsset=function(id,at,track){return addMediaBeforeLocks(id,at,track);};
 const addTextBeforeLocks=addText;
 addText=function(style){if(exporting||project.locked.text){toast('Unlock the Text & captions track first.');return null;}addTextBeforeLocks(style);return current();};

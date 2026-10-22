@@ -12,6 +12,7 @@ def main():
     if args.install:
         running=subprocess.run(['ps','-axo','command='],capture_output=True,text=True,check=True).stdout.splitlines()
         if any(line.startswith('/Applications/Cutline Studio.app/Contents/') for line in running):raise SystemExit('Quit Cutline Studio normally before installation so its open project can save safely.')
+    subprocess.run(['node',str(ROOT/'node_modules/typescript/bin/tsc'),'--project',str(ROOT/'tsconfig.json')],cwd=ROOT,check=True)
     electron=ROOT/'node_modules/electron/dist/Electron.app'
     if not electron.is_dir():raise SystemExit('Run npm install and node node_modules/electron/install.js first.')
     engine=BUILD/'resources/backend-build'
@@ -50,7 +51,7 @@ def main():
     shutil.copy2(node_license,runtime/'NODE-LICENSE.txt')
     shutil.copytree(ROOT/'mcp',runtime/'mcp',ignore=shutil.ignore_patterns('__pycache__'))
     (runtime/'dist').mkdir()
-    for name in ['production-core.js','blur-renderer.js','editor-model.js','editing-workflows.js','frame-geometry.js','audio-editing.js','source-check.js']:shutil.copy2(ROOT/'dist'/name,runtime/'dist'/name)
+    for name in ['layer-placement.js','production-core.js','blur-renderer.js','editor-model.js','editing-workflows.js','frame-geometry.js','audio-editing.js','source-check.js']:shutil.copy2(ROOT/'dist'/name,runtime/'dist'/name)
     for name in ['package.json','package-lock.json','LICENSE','THIRD_PARTY.md']:shutil.copy2(ROOT/name,runtime/name)
     subprocess.run(['npm','ci','--omit=dev','--ignore-scripts','--no-audit','--no-fund'],cwd=runtime,check=True)
     subprocess.run([str(runtime/'bin/node'),'-e',"require('./mcp/tools.cjs').createTools()"],cwd=runtime,check=True)

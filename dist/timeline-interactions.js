@@ -17,7 +17,7 @@ function targetTrack(asset,requested){
 }
 function create(options){
  const {element,window:win,document:doc}=options;
- let gesture=null,internalAsset=null,lastDragEnd=-Infinity;
+ let gesture=null,internalAsset=null,internalTrack=null,lastDragEnd=-Infinity;
  const off=[];
  function listen(node,type,handler,capture=false){node.addEventListener(type,handler,capture);off.push(()=>node.removeEventListener(type,handler,capture));}
  function selectionIds(){return options.getSelectedIds?options.getSelectedIds():options.getSelected()?[options.getSelected()]:[];}
@@ -99,7 +99,7 @@ function create(options){
  function dragAsset(event){
   const card=event.target.closest?.('[data-asset],[data-layer-asset]');if(!card)return;
   const id=card.dataset.asset||card.dataset.layerAsset;if(!options.getAsset(id)||!event.dataTransfer)return;
-  internalAsset=id;event.dataTransfer.effectAllowed='copy';event.dataTransfer.setData('application/cutline-asset',id);event.dataTransfer.setData('text/plain','cutline-asset:'+id);
+  internalAsset=id;internalTrack=card.dataset.layerAsset?'overlay':null;if(internalTrack)event.dataTransfer.setData('application/cutline-track',internalTrack);event.dataTransfer.effectAllowed='copy';event.dataTransfer.setData('application/cutline-asset',id);event.dataTransfer.setData('text/plain','cutline-asset:'+id);
   options.clearDropHint();event.stopPropagation();
  }
  function assetId(data){
@@ -112,31 +112,31 @@ function create(options){
  function dragOver(event){
   if(!recognized(event))return;event.preventDefault();
   if(options.isBusy()){event.dataTransfer.dropEffect='none';return;}
-  const destination=options.dropLocation(event),asset=options.getAsset(internalAsset);
+  const destination=options.dropLocation(event),asset=options.getAsset(internalAsset);if(!destination.track&&internalTrack)destination.track=internalTrack;
   if(event.dataTransfer)event.dataTransfer.dropEffect='copy';
   options.showDropHint(destination,asset);
  }
- function clearDrag(){internalAsset=null;lastDragEnd=Date.now();options.clearDropHint();}
+ function clearDrag(){internalAsset=null;internalTrack=null;lastDragEnd=Date.now();options.clearDropHint();}
  async function drop(event){
   if(!recognized(event))return;
   event.preventDefault();event.stopImmediatePropagation();
-  const destination=options.dropLocation(event),id=assetId(event.dataTransfer),files=[...(event.dataTransfer?.files||[])];clearDrag();
+  const destination=options.dropLocation(event),id=assetId(event.dataTransfer),files=[...(event.dataTransfer?.files||[])];if(!destination.track&&(internalTrack||event.dataTransfer?.getData?.('application/cutline-track')==='overlay'))destination.track='overlay';clearDrag();
   if(options.isBusy())return;
   try{
    if(id){
     const asset=options.getAsset(id);if(!asset||!destination.onTimeline)return;
-    const track=targetTrack(asset,destination.track);if(options.getProject().locked?.[track])return options.notify('Unlock the destination track first.');
-    options.placeAsset(id,track,destination.time);return;
+    const track=options.resolveTrack?options.resolveTrack(asset,destination.track):targetTrack(asset,destination.track);if(options.getProject().locked?.[track])return options.notify('Unlock the destination track first.');
+    options.placeAsset(id,track,destination.time,destination);return;
    }
    if(!files.length)return;
    const imported=await options.importFiles(files);
    if(!destination.onTimeline)return;
    const cursors={};let count=0;
    for(const asset of imported||[]){
-    const track=targetTrack(asset,destination.track);
+    const track=options.resolveTrack?options.resolveTrack(asset,destination.track):targetTrack(asset,destination.track);
     if(options.getProject().locked?.[track]){options.notify('Imported to media. Unlock the destination track to add it.');continue;}
-    const at=cursors[track]??destination.time,clip=options.placeAsset(asset.id,track,at);
-    if(clip){cursors[track]=at+clip.duration;count++;}
+    const at=cursors[track]??destination.time,clip=options.placeAsset(asset.id,track,at,destination);
+    if(clip){if(track!=='overlay')cursors[track]=clip.start+clip.duration;count++;}
    }
    if(count)options.notify(`${count} file${count===1?'':'s'} added to the timeline.`);
   }catch(error){options.notify('Could not add media: '+error.message);}

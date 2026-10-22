@@ -73,10 +73,10 @@ async function importFiles(files){
  if(added){tab='media';renderLibrary();scheduleSave();toast(`${added} file${added>1?'s':''} imported. Drag a thumbnail onto the timeline to place it.`);}
  $('#file-input').value='';return imported;
 }
-function addAsset(id,at){
- if(exporting)return;const a=assets.get(id);if(!a)return;checkpoint();
- const track=a.type==='audio'?'audio':'video';const start=at??Math.max(0,...project.clips.filter(c=>c.track===track).map(c=>c.start+c.duration));
- const c=defaultClip(a,start);project.clips.push(c);selected=c.id;playhead=c.start;commit();return c;
+function addAsset(id,at,requestedTrack){
+ if(exporting)return;const a=assets.get(id);if(!a)return;let placement;try{placement=CutlineLayerPlacement.plan(project,a,{track:requestedTrack,at,playhead,selectedId:selected});}catch(error){toast(error.message);return;}
+ if(project.locked[placement.track])return toast('Unlock the destination track first.');
+ checkpoint();const c={...defaultClip(a,placement.start),...placement};project.clips.push(c);setSelection([c.id]);playhead=c.start;commit();drawFrame();return c;
 }
 function addText(style='title'){
  if(exporting)return;checkpoint();const presets={title:{text:'YOUR STORY\nSTARTS HERE',fontSize:108,y:0,fontWeight:800},subtitle:{text:'A moment worth keeping.',fontSize:52,y:30,fontWeight:500},label:{text:'SOMEWHERE, SOMEDAY',fontSize:32,y:-34,fontWeight:600}};
@@ -318,21 +318,23 @@ let interactionController=CutlineInteractions.create({
  positionAt:e=>Math.max(0,(e.clientX-$('#track-area').getBoundingClientRect().left)/zoom),
  seek:t=>{playhead=clamp(t,0,duration());updatePlayhead();},
  importFiles:files=>importFiles(files),notify:text=>toast(text),
- placeAsset:(id,track,at)=>track==='overlay'?addOverlay(id,at):addAsset(id,at),
+ placeAsset:(id,track,at,location)=>addAsset(id,location?.anchorToVideo&&track==='overlay'?undefined:at,track),
+ resolveTrack:(asset,requested)=>CutlineLayerPlacement.track(asset,requested,project.clips),
  dropLocation:e=>{
-  const target=e.target.closest?.('[data-track]');
-  return {onTimeline:!!e.target.closest?.('.timeline,.viewer'),track:target?.dataset.track,
-   time:e.target.closest?.('#track-area')?Math.max(0,(e.clientX-$('#track-area').getBoundingClientRect().left)/zoom):playhead};
+  const target=e.target.closest?.('[data-track],[data-track-label]'),onPreview=!!e.target.closest?.('.viewer'),track=target?.dataset.track||target?.dataset.trackLabel;
+  const precise=!!e.target.closest?.('#track-area');
+  return {onTimeline:!!e.target.closest?.('.timeline,.viewer'),preview:onPreview,track:onPreview?'overlay':track,anchorToVideo:!precise&&!['video','audio'].includes(track),
+   time:precise?Math.max(0,(e.clientX-$('#track-area').getBoundingClientRect().left)/zoom):playhead};
  },
  showDropHint:(location,asset)=>{
   clearTimelineDropHint();
-  if(!location.onTimeline){document.body.classList.add('dragging-files');return;}
-  const track=CutlineInteractions.targetTrack(asset||{type:'video'},location.track),root=$('#'+track+'-track');
+  if(!location.onTimeline){document.body.classList.add('dragging-files');return;}if(location.preview)$('#stage').classList.add('layer-drop-active');
+  const track=CutlineLayerPlacement.track(asset||{type:'video'},location.track,project.clips),root=$('#'+track+'-track');
   if(!root)return;root.classList.add('drop-target');
   const hint=document.createElement('div');hint.id='timeline-drop-preview';hint.className='timeline-drop-preview';
-  hint.style.left=(location.time*zoom)+'px';hint.style.width=Math.max(95,Math.min(500,(asset?.duration||3)*zoom))+'px';
-  hint.textContent=`Drop ${asset?.type==='audio'?'audio':track==='overlay'?'layer':'media'} at ${time(location.time)}`;root.append(hint);
+  let plan;try{plan=asset?CutlineLayerPlacement.plan(project,asset,{track,at:location.anchorToVideo&&track==='overlay'?undefined:location.time,playhead,selectedId:selected}):null;}catch{}hint.style.left=((plan?.start??location.time)*zoom)+'px';hint.style.width=Math.max(45,Math.min(500,(plan?.duration||asset?.duration||3)*zoom))+'px';
+  hint.textContent=`Drop ${asset?.type==='audio'?'audio':track==='overlay'?'layer':'media'} at ${time(plan?.start??location.time)}`;root.append(hint);
  },clearDropHint:()=>clearTimelineDropHint()
 }).bind();
-function clearTimelineDropHint(){document.body.classList.remove('dragging-files');$('#timeline-drop-preview')?.remove();$$('.drop-target').forEach(el=>el.classList.remove('drop-target'));}
+function clearTimelineDropHint(){$('#stage')?.classList.remove('layer-drop-active');document.body.classList.remove('dragging-files');$('#timeline-drop-preview')?.remove();$$('.drop-target').forEach(el=>el.classList.remove('drop-target'));}
 bootstrap().catch(e=>{console.error(e);toast('Could not start: '+e.message);});

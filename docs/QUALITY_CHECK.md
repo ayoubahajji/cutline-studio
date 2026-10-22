@@ -68,3 +68,13 @@ These checks cover tested sources and failure paths; they do not promise that ev
 ### Source-review compatibility patch (2.2.1)
 
 The native path preserves the existing explicit source-review flow. A source-validation failure opens the reviewed complete-frame path, where users can replace footage, deliberately accept an intentional still source, or explicitly export only the available picture range. Those explicit exceptions use the already-verified complete-frame encoder. Ordinary native encoder failures never silently fall back or download an incomplete file. UI regression tests cover both routing decisions; the existing actual export tests cover accepted still footage and the explicit safe picture range.
+
+## Layer and timeline upgrade 2.3.0 — 22 October 2026
+
+Fixed Media-photo insertion, Layers-origin drag intent, preview drops, explicit Main/Audio destinations, end-of-video anchoring, multiple-photo stacking and matching drop previews. New photos use contain sizing and overlap footage without changing it; existing clips retain their transforms. Explicit Layer/Append buttons distinguish simultaneous composition from sequence insertion. The shared rules are authored in TypeScript 7 and also exposed as `cutline_layer_add` (29 MCP tools).
+
+The regression suite uses durationless imported-photo records, the actual app scripts and delegated drop handlers; it covers locked destinations, unchanged base clips, one-step Undo, precise timeline drops, Layers-card video drag, Audio-label timing, preview drops, bounded simultaneous photo drops and drop hints. A real MCP/native-render test verifies red image pixels over a moving source, unchanged outside pixels, exact two-second duration and a fully decoded 60-frame MP4, including undo/redo while Main is locked.
+
+Waveform tests verify exact min/max range queries, isolated one-sample transients, separate stereo and opposite-phase channels, source trim/speed/fade mapping, bounded HiDPI visible-window canvases and unchanged selection/project/undo state. Filmstrip tests exercise independent paused video elements, seeked-frame sequencing, actual Canvas image output, chronological colors, decoder reuse, cache hits and intact trim targets. The broader editor, desktop and MCP checks remain required.
+
+CapCut was a read-only toolkit/documentation reference; [evidence scope](CAPCUT_REFERENCE.md). Its native timeline source was not decompiled or copied. UI integration and media rendering are tested without accessing live browser profiles or automating a denied browser surface.
